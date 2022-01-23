@@ -1,3 +1,5 @@
+/services/nginx/certs
+
 /node_modules
 /public/hot
 /public/storage
@@ -128,4 +130,3 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/phpstorm
 
-services/nginx/certs
