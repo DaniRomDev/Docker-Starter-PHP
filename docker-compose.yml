@@ -1,0 +1,215 @@
+version: "3.7"
+
+networks:
+  laravel-network:
+    driver: bridge
+
+services:
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: nginx.dockerfile
+    container_name: php-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - 443:443
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - ./services/nginx/certs:/etc/nginx/ssl
+    depends_on:
+      - php
+      - redis
+      - db
+      - mailhog
+    networks:
+      - laravel-network
+
+  db:
+    image: "mariadb:latest"
+    container_name: php-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:${DB_PORT}"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./services/database/scripts:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_USER_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "${DB_ALLOW_EMPTY_PASSWORD}"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mariadb
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_USER_PASSWORD}"]
+      retries: 3
+      timeout: 10s
+    networks:
+      - laravel-network
+
+  db-test:
+    image: "mariadb:latest"
+    container_name: "php-db-test"
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3307:${DB_PORT}"
+    environment:
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_USER_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "${DB_ALLOW_EMPTY_PASSWORD}"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mariadb
+    networks:
+      - laravel-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8082:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_ARBITRARY=1
+      - PMA_PORT=${DB_PORT}
+      - HIDE_PHP_VERSION=true
+    networks:
+      - laravel-network
+    links:
+      - db
+  php:
+    build:
+      context: ./services/php
+      dockerfile: php.dockerfile
+      target: php_main
+    container_name: php-container
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - ./services/php/config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    networks:
+      - laravel-network
+
+  redis:
+    image: "redis:latest"
+    container_name: php-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - laravel-network
+
+  composer:
+    build:
+      context: ./services/composer
+      dockerfile: composer.dockerfile
+    container_name: php-composer
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html"
+    working_dir: /var/www/html
+    depends_on:
+      - php
+    user: "${APP_USER}"
+    entrypoint: ["composer", "--ignore-platform-reqs"]
+    networks:
+      - laravel-network
+
+  npm:
+    image: "node:alpine"
+    container_name: npm-container
+    restart: unless-stopped
+    entrypoint: ["npm"]
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html"
+    working_dir: /var/www/html
+    networks:
+      - laravel-network
+
+  artisan:
+    build:
+      context: ./services/php
+      dockerfile: php.dockerfile
+      target: php_main
+    container_name: php-artisan
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+    depends_on:
+      - db
+      - redis
+    working_dir: /var/www/html
+    user: "${APP_USER}"
+    entrypoint: ["php", "/var/www/html/artisan"]
+    networks:
+      - laravel-network
+
+  queue:
+    restart: always
+    container_name: php-queue
+    build:
+      context: ./services/php
+      dockerfile: php.dockerfile
+      target: php_queue
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+    healthcheck:
+      test: ["CMD-SHELL", "ps -ef || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+    depends_on:
+      - db
+      - redis
+    networks:
+      - laravel-network
+
+  cron:
+    restart: unless-stopped
+    container_name: php-cron
+    build:
+      context: ./services/php
+      dockerfile: php.dockerfile
+      target: php_cron
+    volumes:
+      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+    healthcheck:
+      test: ["CMD-SHELL", "ps -ef || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+    depends_on:
+      - db
+    networks:
+      - laravel-network
+
+  mailhog:
+    image: "mailhog/mailhog:latest"
+    container_name: php-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - laravel-network
+  ngrok:
+    image: wernight/ngrok:latest
+    container_name: ngrok
+    ports:
+      - 4040:4040
+    environment:
+      NGROK_PROTOCOL: http
+      NGROK_PORT: "nginx:${NGINX_INTERNAL_PORT}"
+      NGROK_AUTH: ${NGROK_TOKEN}
+      NGROK_REGION: eu
+    depends_on:
+      - nginx
+    networks:
+      - laravel-network
+
+volumes:
+  db-data:
