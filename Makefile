@@ -2,21 +2,38 @@
 current-dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/sh
 VERSION=${shell cat VERSION}
+DOMAIN=laravel.local
 
 #DEFAULT BEHAVIOR
 all:build
 
+
+build:install env docker/build docker/up
+
+install:
+	$(SHELL) -c "${current-dir}scripts/install-dependencies.sh"
+	$(SHELL) -c "${current-dir}scripts/manage-etc-hosts.sh addhost ${DOMAIN}"
+	@make certs
+
 env:
 	@if [ ! -f ${current-dir}.env ]; then cp ${current-dir}.env.example ${current-dir}.env; fi
 
-build:env docker/build
-	@docker-compose ps
+certs:
+	mkcert -cert-file ${DOMAIN}.crt \
+		-cert-file ${DOMAIN}.crt \
+		-key-file ${DOMAIN}.key \
+		${DOMAIN}
+	mkdir -p {current-dir}/services/nginx/certs
+	mv ${DOMAIN}.crt {current-dir}/services/nginx/certs
+	mv ${DOMAIN}.key {current-dir}/services/nginx/certs
 
+up: docker/up
 restart:docker/down docker/up
 destroy:docker/destroy
+	$(SHELL) -c "${current-dir}scripts/manage-etc-hosts.sh removehost ${DOMAIN}"
 
 # DOCKER GENERIC COMMANDS
-docker/build: CMD=build
+docker/build: CMD=build --no-cache
 docker/up: CMD=up -d
 docker/stop: CMD=stop
 docker/down: CMD=down --remove-orphans
@@ -32,9 +49,8 @@ shell/nginx: CMD="nginx bash"
 shell/php: CMD="php bash"
 shell/db: CMD="db bash"
 shell/redis: CMD="redis bash"
-shell/composer: CMD="composer bash"
 
-shell/nginx shell/php shell/db shell/redis shell/composer:
+shell/nginx shell/php shell/db shell/redis:
 	@make docker/exec command=${CMD}
 
 composer/install: ACTION="install"
