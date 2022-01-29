@@ -8,7 +8,7 @@ DOMAIN :=laravel.local
 all:build
 
 
-build:install env docker/build docker/up
+build:install env docker/build up
 
 install:
 	@chmod -R u+x "${current-dir}scripts"
@@ -20,15 +20,17 @@ env:
 	@if [ ! -f ${current-dir}.env ]; then cp ${current-dir}.env.example ${current-dir}.env; fi
 
 certs:
-	mkcert -cert-file ${DOMAIN}.crt \
-		-cert-file ${DOMAIN}.crt \
-		-key-file ${DOMAIN}.key \
+	mkcert -cert-file ssl.crt \
+		-cert-file ssl.crt \
+		-key-file ssl.key \
 		${DOMAIN}
-	mkdir -p ${current-dir}/services/nginx/certs
-	mv ${DOMAIN}.crt ${current-dir}/services/nginx/certs
-	mv ${DOMAIN}.key ${current-dir}/services/nginx/certs
+	mkdir -p ${current-dir}services/nginx/certs
+	mv ssl.crt ${current-dir}services/nginx/certs
+	mv ssl.key ${current-dir}services/nginx/certs
 
 up: docker/up
+	@make docker/ps
+down: docker/down
 	@make docker/ps
 restart:docker/down docker/up
 destroy:docker/destroy
