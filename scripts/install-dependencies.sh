@@ -9,6 +9,7 @@ if [ "$(uname)" == "Darwin" ]; then
     brew tap homebrew/cask-versions
     brew install curl wget mkcert nss docker docker-compose 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ] || [ "$(uname)" == "cygwin"]; then
+    sudo apt update
     sudo apt install curl wget libnss3-tools
 
     if ! which mkcert; then
@@ -19,8 +20,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ] || [ "$(uname)" == "cygwin"
     fi
 
     if ! which docker || ! which docker-compose; then
-        sudo apt install  docker docker-compose -y
-       
+        sudo apt install docker docker-compose -y
     fi
     
     sudo apt autoremove --purge

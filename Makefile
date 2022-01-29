@@ -29,9 +29,10 @@ certs:
 	mv ssl.key ${CURRENT_DIR}services/nginx/certs
 
 up: docker/up
-	@make docker/ps
+	@make ps
 down: docker/down
-	@make docker/ps
+	@make ps
+ps: docker/ps
 restart:docker/down docker/up
 destroy:docker/destroy
 	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh removehost ${DOMAIN}"
