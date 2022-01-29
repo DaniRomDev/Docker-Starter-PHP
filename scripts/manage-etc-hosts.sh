@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # PATH TO YOUR HOSTS FILE
 ETC_HOSTS=/etc/hosts

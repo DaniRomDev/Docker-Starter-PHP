@@ -2,7 +2,7 @@
 current-dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/sh
 VERSION=${shell cat VERSION}
-DOMAIN=laravel.local
+DOMAIN :=laravel.local
 
 #DEFAULT BEHAVIOR
 all:build
@@ -11,6 +11,7 @@ all:build
 build:install env docker/build docker/up
 
 install:
+	@chmod -R u+x "${current-dir}scripts"
 	$(SHELL) -c "${current-dir}scripts/install-dependencies.sh"
 	$(SHELL) -c "${current-dir}scripts/manage-etc-hosts.sh addhost ${DOMAIN}"
 	@make certs
@@ -23,16 +24,18 @@ certs:
 		-cert-file ${DOMAIN}.crt \
 		-key-file ${DOMAIN}.key \
 		${DOMAIN}
-	mkdir -p {current-dir}/services/nginx/certs
-	mv ${DOMAIN}.crt {current-dir}/services/nginx/certs
-	mv ${DOMAIN}.key {current-dir}/services/nginx/certs
+	mkdir -p ${current-dir}/services/nginx/certs
+	mv ${DOMAIN}.crt ${current-dir}/services/nginx/certs
+	mv ${DOMAIN}.key ${current-dir}/services/nginx/certs
 
 up: docker/up
+	@make docker/ps
 restart:docker/down docker/up
 destroy:docker/destroy
 	$(SHELL) -c "${current-dir}scripts/manage-etc-hosts.sh removehost ${DOMAIN}"
 
 # DOCKER GENERIC COMMANDS
+docker/ps: CMD=ps
 docker/build: CMD=build --no-cache
 docker/up: CMD=up -d
 docker/stop: CMD=stop
@@ -42,7 +45,7 @@ docker/destroy-volumes: CMD=down --volumes --remove-orphans
 docker/run: CMD=run --rm $(command)
 docker/exec: CMD=exec $(command)
 	
-docker/up docker/build docker/stop docker/down docker/destroy/ docker/destroy-volumes docker/run docker/exec:
+docker/ps docker/up docker/build docker/stop docker/down docker/destroy/ docker/destroy-volumes docker/run docker/exec:
 	docker-compose ${CMD}
 
 shell/nginx: CMD="nginx bash"
