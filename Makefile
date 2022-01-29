@@ -1,13 +1,13 @@
 #CURRENT DIR FOR WINDOWS & UNIX SYSTEMS
-CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/sh
 VERSION=${shell cat VERSION}
+CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOMAIN :=laravel.local
 
 #DEFAULT BEHAVIOR
 all:build
 
-
+.PHONY: build
 build:install env docker/build up
 
 install:
@@ -55,7 +55,8 @@ shell/php: CMD="php bash"
 shell/db: CMD="db bash"
 shell/redis: CMD="redis bash"
 
-shell/nginx shell/php shell/db shell/redis:
+.PHONY: shell
+shell shell/nginx shell/php shell/db shell/redis:
 	@make docker/exec command=${CMD}
 
 composer/install: ACTION="install"
@@ -63,6 +64,8 @@ composer/update: ACTION=update
 composer/require: ACTION="require $(packages)"
 composer/remove: ACTION="remove $(packages)"
 composer/install-laravel: ACTION="create-project --prefer-dist laravel/laravel ."
+
+laravel/install:composer/install-laravel
 
 .PHONY: composer
 composer composer/install composer/update composer/require composer/remove composer/install-laravel:
@@ -72,4 +75,3 @@ composer composer/install composer/update composer/require composer/remove compo
 artisan:
 	@make docker/run command="artisan $(command)" 
 
-laravel/install:composer/install-laravel
