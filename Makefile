@@ -1,5 +1,5 @@
 #CURRENT DIR FOR WINDOWS & UNIX SYSTEMS
-current-dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/sh
 VERSION=${shell cat VERSION}
 DOMAIN :=laravel.local
@@ -11,22 +11,22 @@ all:build
 build:install env docker/build up
 
 install:
-	@chmod -R u+x "${current-dir}scripts"
-	$(SHELL) -c "${current-dir}scripts/install-dependencies.sh"
-	$(SHELL) -c "${current-dir}scripts/manage-etc-hosts.sh addhost ${DOMAIN}"
+	@chmod -R u+x "${CURRENT_DIR}scripts"
+	$(SHELL) -c "${CURRENT_DIR}scripts/install-dependencies.sh"
+	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh addhost ${DOMAIN}"
 	@make certs
 
 env:
-	@if [ ! -f ${current-dir}.env ]; then cp ${current-dir}.env.example ${current-dir}.env; fi
+	@if [ ! -f ${CURRENT_DIR}.env ]; then cp ${CURRENT_DIR}.env.example ${CURRENT_DIR}.env; fi
 
 certs:
 	mkcert -cert-file ssl.crt \
 		-cert-file ssl.crt \
 		-key-file ssl.key \
 		${DOMAIN}
-	mkdir -p ${current-dir}services/nginx/certs
-	mv ssl.crt ${current-dir}services/nginx/certs
-	mv ssl.key ${current-dir}services/nginx/certs
+	mkdir -p ${CURRENT_DIR}services/nginx/certs
+	mv ssl.crt ${CURRENT_DIR}services/nginx/certs
+	mv ssl.key ${CURRENT_DIR}services/nginx/certs
 
 up: docker/up
 	@make docker/ps
@@ -34,7 +34,7 @@ down: docker/down
 	@make docker/ps
 restart:docker/down docker/up
 destroy:docker/destroy
-	$(SHELL) -c "${current-dir}scripts/manage-etc-hosts.sh removehost ${DOMAIN}"
+	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh removehost ${DOMAIN}"
 
 # DOCKER GENERIC COMMANDS
 docker/ps: CMD=ps
@@ -64,7 +64,12 @@ composer/require: ACTION="require $(packages)"
 composer/remove: ACTION="remove $(packages)"
 composer/install-laravel: ACTION="create-project --prefer-dist laravel/laravel ."
 
-composer/install composer/update composer/require composer/remove composer/install-laravel:
+.PHONY: composer
+composer composer/install composer/update composer/require composer/remove composer/install-laravel:
 	@make docker/run command="composer ${ACTION}"
+
+.PHONY: artisan
+artisan:
+	@make docker/run command="artisan $(command)" 
 
 laravel/install:composer/install-laravel
