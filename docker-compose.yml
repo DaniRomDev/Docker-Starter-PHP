@@ -15,7 +15,7 @@ services:
       - "8080:80"
       - 443:443
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - "./src:/var/www/html:delegated"
       - ./services/nginx/certs:/etc/nginx/ssl
     depends_on:
       - php
@@ -92,7 +92,7 @@ services:
       target: php_main
     container_name: php-container
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - "./src:/var/www/html:delegated"
       - ./services/php/config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
     networks:
       - laravel-network
@@ -112,7 +112,7 @@ services:
       dockerfile: composer.dockerfile
     container_name: php-composer
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html"
+      - "./src:/var/www/html"
     working_dir: /var/www/html
     depends_on:
       - php
@@ -127,7 +127,7 @@ services:
     restart: unless-stopped
     entrypoint: ["npm"]
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html"
+      - "./src:/var/www/html"
     working_dir: /var/www/html
     networks:
       - laravel-network
@@ -139,7 +139,7 @@ services:
       target: php_main
     container_name: php-artisan
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - "./src:/var/www/html:delegated"
     depends_on:
       - db
       - redis
@@ -157,7 +157,7 @@ services:
       dockerfile: php.dockerfile
       target: php_queue
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - "./src:/var/www/html:delegated"
     healthcheck:
       test: ["CMD-SHELL", "ps -ef || exit 1"]
       interval: 10s
@@ -177,7 +177,7 @@ services:
       dockerfile: php.dockerfile
       target: php_cron
     volumes:
-      - "./${PROJECT_FOLDER}:/var/www/html:delegated"
+      - "./src:/var/www/html:delegated"
     healthcheck:
       test: ["CMD-SHELL", "ps -ef || exit 1"]
       interval: 10s
