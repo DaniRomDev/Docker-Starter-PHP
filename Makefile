@@ -61,10 +61,10 @@ shell/redis: CMD="redis bash"
 shell shell/nginx shell/php shell/db shell/redis:
 	@make docker/exec command=${CMD}
 
-composer/install: ACTION="install"
+composer/install: ACTION=install
 composer/update: ACTION=update
-composer/require: ACTION="require $(packages)"
-composer/remove: ACTION="remove $(packages)"
+composer/require: ACTION=require $(packages)
+composer/remove: ACTION=remove $(packages)
 composer/install-laravel: ACTION=create-project --prefer-dist laravel/laravel .
 
 laravel/install:composer/install-laravel
