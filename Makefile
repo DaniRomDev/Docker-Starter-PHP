@@ -1,5 +1,5 @@
 #CURRENT DIR FOR WINDOWS & UNIX SYSTEMS
-SHELL=/bin/sh
+SHELL=/bin/bash
 VERSION=${shell cat VERSION}
 CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOMAIN :=laravel.local
@@ -22,7 +22,7 @@ env:
 
 .PHONY: clean
 clean:
-	@rm -rfv ./${PROJECT_FOLDER}/{*,.*} ||:
+	@$(SHELL) -c "rm -rfv ${CURRENT_DIR}${PROJECT_FOLDER}/{*,.*} ||:"
 
 certs:
 	mkcert -cert-file ssl.crt \
