@@ -16,11 +16,7 @@ RUN apk add --no-cache \
     g++ \
     gcc \
     make \
-    zlib-dev 
-
-FROM php_base AS php_main
-
-RUN apk add --no-cache \
+    zlib-dev \
     freetype \
     libxslt-dev \
     libbz2 \
@@ -53,19 +49,8 @@ FROM php_base AS php_cron
 COPY cron/run-scheduler.sh /usr/bin/run-scheduler.sh
 RUN chmod u+x /usr/bin/run-scheduler.sh
 
-RUN apk add --no-cache \
-    g++ \
-    gcc \
-    make \
-    postgresql-dev \
-    postgresql-libs \
-    sqlite-dev 
-
-RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
-RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql pdo_sqlite 
-
 CMD ["/usr/bin/run-scheduler.sh"]
 
-FROM php_main AS php_queue
+FROM php_base AS php_queue
 
 CMD ["php", "/var/www/html/artisan", "queue:work"] 

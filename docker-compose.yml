@@ -26,7 +26,7 @@ services:
       - laravel-network
 
   db:
-    image: "mariadb:latest"
+    image: "mariadb:10.3.32-focal"
     container_name: php-db
     restart: unless-stopped
     tty: true
@@ -89,7 +89,7 @@ services:
     build:
       context: ./services/php
       dockerfile: php.dockerfile
-      target: php_main
+      target: php_base
     container_name: php-container
     volumes:
       - "./src:/var/www/html:delegated"
@@ -136,7 +136,7 @@ services:
     build:
       context: ./services/php
       dockerfile: php.dockerfile
-      target: php_main
+      target: php_base
     container_name: php-artisan
     volumes:
       - "./src:/var/www/html:delegated"

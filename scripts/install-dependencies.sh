@@ -10,12 +10,12 @@ if [ "$(uname)" == "Darwin" ]; then
     brew install curl wget mkcert nss docker docker-compose 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ] || [ "$(uname)" == "cygwin"]; then
     sudo apt update
-    sudo apt install curl wget libnss3-tools
+    sudo apt install curl wget libnss3-tools -y
 
     if ! which mkcert; then
         wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-linux-amd64
-        mv mkcert-v1.4.3-linux-amd64 /usr/bin/mkcert
-        chmod +x /usr/bin/mkcert
+        sudo mv mkcert-v1.4.3-linux-amd64 /usr/bin/mkcert
+        sudo chmod +x /usr/bin/mkcert
         mkcert --version
     fi
 

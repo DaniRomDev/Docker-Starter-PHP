@@ -8,12 +8,12 @@ DOMAIN :=laravel.local
 all:build
 
 .PHONY: build
-build:install env docker/build up
+build:install env docker/build docker/up
 
 install:
 	@chmod -R u+x "${CURRENT_DIR}scripts"
 	$(SHELL) -c "${CURRENT_DIR}scripts/install-dependencies.sh"
-	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh addhost ${DOMAIN}"
+	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh add ${DOMAIN}"
 	@make certs
 
 env:
@@ -35,7 +35,7 @@ down: docker/down
 ps: docker/ps
 restart:docker/down docker/up
 destroy:docker/destroy
-	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh removehost ${DOMAIN}"
+	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh remove ${DOMAIN}"
 
 # DOCKER GENERIC COMMANDS
 docker/ps: CMD=ps
