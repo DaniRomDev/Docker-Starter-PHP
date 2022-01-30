@@ -1,8 +1,20 @@
-FROM php:8.0.10-fpm-alpine3.13 as php_base
+FROM php:fpm-alpine3.15 as php_base
+
+ARG UID
+ARG GID
+
+ENV UID=${UID}
+ENV GID=${GID}
 
 COPY config/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
+RUN delgroup dialout
+RUN addgroup -g ${GID} --system laravel
+RUN adduser -G laravel --system -D -s /bin/sh -u ${UID} laravel
+
+RUN sed -i "s/user = www-data/user = laravel/g" /usr/local/etc/php-fpm.d/www.conf
+RUN sed -i "s/group = www-data/group = laravel/g" /usr/local/etc/php-fpm.d/www.conf
+RUN echo "php_admin_flag[log_errors] = on" >> /usr/local/etc/php-fpm.d/www.conf
 
 RUN mkdir -p /var/www/html
 
@@ -35,7 +47,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
 RUN docker-php-ext-configure intl
 
-RUN docker-php-ext-install bz2 xsl ctype filter opcache tokenizer gd intl pdo pdo_mysql pdo_pgsql pdo_sqlite exif pcntl sockets 
+RUN docker-php-ext-install bz2 xsl ctype filter opcache gd intl pdo pdo_mysql pdo_pgsql pdo_sqlite exif pcntl 
 
 RUN mkdir -p /usr/src/php/ext/redis \
     && curl -L https://github.com/phpredis/phpredis/archive/5.3.4.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 \

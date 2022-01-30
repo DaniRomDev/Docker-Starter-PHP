@@ -9,6 +9,9 @@ services:
     build:
       context: ./services/nginx
       dockerfile: nginx.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: php-nginx
     restart: unless-stopped
     ports:
@@ -90,6 +93,9 @@ services:
       context: ./services/php
       dockerfile: php.dockerfile
       target: php_base
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: php-container
     volumes:
       - "./src:/var/www/html:delegated"
@@ -110,6 +116,9 @@ services:
     build:
       context: ./services/composer
       dockerfile: composer.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: php-composer
     volumes:
       - "./src:/var/www/html"
@@ -137,6 +146,9 @@ services:
       context: ./services/php
       dockerfile: php.dockerfile
       target: php_base
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: php-artisan
     volumes:
       - "./src:/var/www/html:delegated"
@@ -156,6 +168,9 @@ services:
       context: ./services/php
       dockerfile: php.dockerfile
       target: php_queue
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     volumes:
       - "./src:/var/www/html:delegated"
     healthcheck:
@@ -176,6 +191,9 @@ services:
       context: ./services/php
       dockerfile: php.dockerfile
       target: php_cron
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     volumes:
       - "./src:/var/www/html:delegated"
     healthcheck:

@@ -8,12 +8,11 @@ DOMAIN :=laravel.local
 all:build
 
 .PHONY: build
-build:install env docker/build docker/up
+build:install env docker/build-nc docker/up
 
 install:
 	@chmod -R u+x "${CURRENT_DIR}scripts"
 	$(SHELL) -c "${CURRENT_DIR}scripts/install-dependencies.sh"
-	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh add ${DOMAIN}"
 	@make certs
 
 env:
@@ -27,6 +26,8 @@ certs:
 	mkdir -p ${CURRENT_DIR}services/nginx/certs
 	mv ssl.crt ${CURRENT_DIR}services/nginx/certs
 	mv ssl.key ${CURRENT_DIR}services/nginx/certs
+	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh add ${DOMAIN}"
+
 
 up: docker/up
 	@make ps

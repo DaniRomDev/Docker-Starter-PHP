@@ -17,7 +17,7 @@ die() { yell "$*"; exit 111; }
 try() { "$@" || die "cannot $*"; }
 
 remove() {
-    if [ -n "$(grep -P "[[:space:]]$hostname" /etc/hosts)" ]; then
+    if [ -n "$(grep "[[:space:]]$hostname" /etc/hosts)" ]; then
         echo -n "$hostname found in /etc/hosts. ";
         try sudo sed -ie "/[[:space:]]$hostname/d" "/etc/hosts";
         echo "Removed.";
@@ -27,7 +27,7 @@ remove() {
 }
 
 add() {
-    if [ -n "$(grep -P "[[:space:]]$hostname" /etc/hosts)" ]; then
+    if [ -n "$(grep "[[:space:]]$hostname" /etc/hosts)" ]; then
         yell "$hostname, already exists: $(grep $hostname /etc/hosts)";
     else
         ip="${2:-127.0.0.1}"

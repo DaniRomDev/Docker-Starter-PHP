@@ -31,3 +31,4 @@ else
     echo -e "$(tput setaf 1) All dependencies are up to date, continuing with the build process..."
 fi
 
+export UID=$(id -u) && export GID=$(id -g)
