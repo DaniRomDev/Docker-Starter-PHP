@@ -1,4 +1,4 @@
-FROM php:8.0.10-fpm-alpine3.13c as php_base
+FROM php:8.0.10-fpm-alpine3.13 as php_base
 
 COPY config/www.conf /usr/local/etc/php-fpm.d/www.conf
 

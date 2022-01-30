@@ -65,7 +65,7 @@ composer/install: ACTION="install"
 composer/update: ACTION=update
 composer/require: ACTION="require $(packages)"
 composer/remove: ACTION="remove $(packages)"
-composer/install-laravel: ACTION="create-project --prefer-dist laravel/laravel ."
+composer/install-laravel: ACTION=create-project --prefer-dist laravel/laravel .
 
 laravel/install:composer/install-laravel
 
