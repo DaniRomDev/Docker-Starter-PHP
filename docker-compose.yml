@@ -97,6 +97,7 @@ services:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     container_name: php-container
+    working_dir: /var/www/html
     volumes:
       - "./src:/var/www/html:delegated"
       - ./services/php/config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
@@ -131,12 +132,15 @@ services:
       - laravel-network
 
   npm:
-    image: "node:alpine"
+    image: "node:alpine3.15"
     container_name: npm-container
     restart: unless-stopped
     entrypoint: ["npm"]
+    ports:
+      - 3000:3000
+      - 3001:3001
     volumes:
-      - "./src:/var/www/html"
+      - "./src:/var/www/html:delegated"
     working_dir: /var/www/html
     networks:
       - laravel-network
@@ -156,7 +160,6 @@ services:
       - db
       - redis
     working_dir: /var/www/html
-    user: "${APP_USER}"
     entrypoint: ["php", "/var/www/html/artisan"]
     networks:
       - laravel-network
@@ -173,6 +176,7 @@ services:
         - GID=${GID:-1000}
     volumes:
       - "./src:/var/www/html:delegated"
+    working_dir: /var/www/html
     healthcheck:
       test: ["CMD-SHELL", "ps -ef || exit 1"]
       interval: 10s
@@ -196,6 +200,7 @@ services:
         - GID=${GID:-1000}
     volumes:
       - "./src:/var/www/html:delegated"
+    working_dir: /var/www/html
     healthcheck:
       test: ["CMD-SHELL", "ps -ef || exit 1"]
       interval: 10s

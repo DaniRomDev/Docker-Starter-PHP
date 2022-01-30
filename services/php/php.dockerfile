@@ -16,9 +16,8 @@ RUN sed -i "s/user = www-data/user = laravel/g" /usr/local/etc/php-fpm.d/www.con
 RUN sed -i "s/group = www-data/group = laravel/g" /usr/local/etc/php-fpm.d/www.conf
 RUN echo "php_admin_flag[log_errors] = on" >> /usr/local/etc/php-fpm.d/www.conf
 
-RUN mkdir -p /var/www/html
-
-RUN chown laravel:laravel /var/www/html
+RUN mkdir -p /var/www/html && \
+    chown laravel:laravel /var/www/html 
 
 WORKDIR /var/www/html
 
