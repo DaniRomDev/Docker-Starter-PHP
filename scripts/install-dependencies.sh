@@ -8,6 +8,9 @@ if [ "$(uname)" == "Darwin" ]; then
 
     brew tap homebrew/cask-versions
     brew install curl wget mkcert nss docker docker-compose 
+
+    export UID=$(id -u) && export GID=$(id -g)
+
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ] || [ "$(uname)" == "cygwin"]; then
     sudo apt update
     sudo apt install curl wget libnss3-tools -y
@@ -31,4 +34,3 @@ else
     echo -e "$(tput setaf 1) All dependencies are up to date, continuing with the build process..."
 fi
 
-export UID=$(id -u) && export GID=$(id -g)

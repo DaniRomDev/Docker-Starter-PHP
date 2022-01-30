@@ -4,6 +4,11 @@ networks:
   laravel-network:
     driver: bridge
 
+x-services-volume: &services-volume
+  type: bind
+  source: ./src
+  target: /var/www/html:delegated
+
 services:
   nginx:
     build:
@@ -18,7 +23,7 @@ services:
       - "8080:80"
       - 443:443
     volumes:
-      - "./src:/var/www/html:delegated"
+      - <<: *services-volume
       - ./services/nginx/certs:/etc/nginx/ssl
     depends_on:
       - php
@@ -99,17 +104,8 @@ services:
     container_name: php-container
     working_dir: /var/www/html
     volumes:
-      - "./src:/var/www/html:delegated"
+      - <<: *services-volume
       - ./services/php/config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-    networks:
-      - laravel-network
-
-  redis:
-    image: "redis:latest"
-    container_name: php-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
     networks:
       - laravel-network
 
@@ -122,7 +118,8 @@ services:
         - GID=${GID:-1000}
     container_name: php-composer
     volumes:
-      - "./src:/var/www/html"
+      - <<: *services-volume
+        target: /var/www/html
     working_dir: /var/www/html
     depends_on:
       - php
@@ -130,21 +127,6 @@ services:
     entrypoint: ["composer", "--ignore-platform-reqs"]
     networks:
       - laravel-network
-
-  npm:
-    image: "node:alpine3.15"
-    container_name: npm-container
-    restart: unless-stopped
-    entrypoint: ["npm"]
-    ports:
-      - 3000:3000
-      - 3001:3001
-    volumes:
-      - "./src:/var/www/html:delegated"
-    working_dir: /var/www/html
-    networks:
-      - laravel-network
-
   artisan:
     build:
       context: ./services/php
@@ -155,7 +137,7 @@ services:
         - GID=${GID:-1000}
     container_name: php-artisan
     volumes:
-      - "./src:/var/www/html:delegated"
+      - <<: *services-volume
     depends_on:
       - db
       - redis
@@ -175,7 +157,7 @@ services:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     volumes:
-      - "./src:/var/www/html:delegated"
+      - <<: *services-volume
     working_dir: /var/www/html
     healthcheck:
       test: ["CMD-SHELL", "ps -ef || exit 1"]
@@ -199,7 +181,7 @@ services:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     volumes:
-      - "./src:/var/www/html:delegated"
+      - <<: *services-volume
     working_dir: /var/www/html
     healthcheck:
       test: ["CMD-SHELL", "ps -ef || exit 1"]
@@ -208,6 +190,29 @@ services:
       retries: 3
     depends_on:
       - db
+    networks:
+      - laravel-network
+
+  redis:
+    image: "redis:latest"
+    container_name: php-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - laravel-network
+
+  npm:
+    image: "node:alpine3.15"
+    container_name: npm-container
+    restart: unless-stopped
+    entrypoint: ["npm"]
+    ports:
+      - 3000:3000
+      - 3001:3001
+    volumes:
+      - <<: *services-volume
+    working_dir: /var/www/html
     networks:
       - laravel-network
 

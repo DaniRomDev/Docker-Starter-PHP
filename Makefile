@@ -3,16 +3,18 @@ SHELL=/bin/sh
 VERSION=${shell cat VERSION}
 CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOMAIN :=laravel.local
+PROJECT_FOLDER=src
 
 #DEFAULT BEHAVIOR
 all:build
 
 .PHONY: build
-build:install env docker/build-nc docker/up
+build:install env docker/build-nc up
 
 install:
 	@chmod -R u+x "${CURRENT_DIR}scripts"
 	$(SHELL) -c "${CURRENT_DIR}scripts/install-dependencies.sh"
+	@mkdir -p src
 	@make certs
 
 env:
@@ -45,12 +47,13 @@ docker/build-nc: CMD=build --no-cache
 docker/up: CMD=up -d
 docker/stop: CMD=stop
 docker/down: CMD=down --remove-orphans
+docker/restart: CND=restart
 docker/destroy: CMD=down --rmi all --volumes --remove-orphans
 docker/destroy-volumes: CMD=down --volumes --remove-orphans
 docker/run: CMD=run --rm $(command)
 docker/exec: CMD=exec $(command)
 	
-docker/ps docker/up docker/build docker/build-nc docker/stop docker/down docker/destroy docker/destroy-volumes docker/run docker/exec:
+docker/ps docker/up docker/build docker/build-nc docker/stop docker/restart docker/down docker/destroy docker/destroy-volumes docker/run docker/exec:
 	docker-compose ${CMD}
 
 shell/nginx: CMD="nginx bash"
@@ -68,7 +71,7 @@ composer/require: ACTION=require $(packages)
 composer/remove: ACTION=remove $(packages)
 composer/install-laravel: ACTION=create-project --prefer-dist laravel/laravel .
 
-laravel/install:composer/install-laravel
+laravel/install:composer/install-laravel docker/restart
 
 .PHONY: composer
 composer composer/install composer/update composer/require composer/remove composer/install-laravel:
