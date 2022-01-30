@@ -39,7 +39,8 @@ destroy:docker/destroy
 
 # DOCKER GENERIC COMMANDS
 docker/ps: CMD=ps
-docker/build: CMD=build --no-cache
+docker/build: CMD=build
+docker/build-nc: CMD=build --no-cache
 docker/up: CMD=up -d
 docker/stop: CMD=stop
 docker/down: CMD=down --remove-orphans
@@ -48,7 +49,7 @@ docker/destroy-volumes: CMD=down --volumes --remove-orphans
 docker/run: CMD=run --rm $(command)
 docker/exec: CMD=exec $(command)
 	
-docker/ps docker/up docker/build docker/stop docker/down docker/destroy/ docker/destroy-volumes docker/run docker/exec:
+docker/ps docker/up docker/build docker/build-nc docker/stop docker/down docker/destroy docker/destroy-volumes docker/run docker/exec:
 	docker-compose ${CMD}
 
 shell/nginx: CMD="nginx bash"
