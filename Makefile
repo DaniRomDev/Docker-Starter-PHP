@@ -3,7 +3,7 @@ SHELL=/bin/sh
 VERSION=${shell cat VERSION}
 CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOMAIN :=laravel.local
-PROJECT_FOLDER=src
+PROJECT_FOLDER :=src
 
 #DEFAULT BEHAVIOR
 all:build
@@ -19,6 +19,10 @@ install:
 
 env:
 	@if [ ! -f ${CURRENT_DIR}.env ]; then cp ${CURRENT_DIR}.env.example ${CURRENT_DIR}.env; fi
+
+.PHONY: clean
+clean:
+	@rm -rfv ./${PROJECT_FOLDER}/{*,.*} ||:
 
 certs:
 	mkcert -cert-file ssl.crt \
@@ -71,7 +75,7 @@ composer/require: ACTION=require $(packages)
 composer/remove: ACTION=remove $(packages)
 composer/install-laravel: ACTION=create-project --prefer-dist laravel/laravel .
 
-laravel/install:composer/install-laravel docker/restart
+laravel/install:docker/down clean composer/install-laravel up
 
 .PHONY: composer
 composer composer/install composer/update composer/require composer/remove composer/install-laravel:

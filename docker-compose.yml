@@ -7,7 +7,7 @@ networks:
 x-services-volume: &services-volume
   type: bind
   source: ./src
-  target: /var/www/html:delegated
+  target: /var/www/html
 
 services:
   nginx:
@@ -15,8 +15,8 @@ services:
       context: ./services/nginx
       dockerfile: nginx.dockerfile
       args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
+        - UID=${UID:-1001}
+        - GID=${GID:-1001}
     container_name: php-nginx
     restart: unless-stopped
     ports:
@@ -99,8 +99,8 @@ services:
       dockerfile: php.dockerfile
       target: php_base
       args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
+        - UID=${UID:-1001}
+        - GID=${GID:-1001}
     container_name: php-container
     working_dir: /var/www/html
     volumes:
@@ -114,12 +114,11 @@ services:
       context: ./services/composer
       dockerfile: composer.dockerfile
       args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
+        - UID=${UID:-1001}
+        - GID=${GID:-1001}
     container_name: php-composer
     volumes:
       - <<: *services-volume
-        target: /var/www/html
     working_dir: /var/www/html
     depends_on:
       - php
@@ -133,9 +132,10 @@ services:
       dockerfile: php.dockerfile
       target: php_base
       args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
+        - UID=${UID:-1001}
+        - GID=${GID:-1001}
     container_name: php-artisan
+    user: "${APP_USER}"
     volumes:
       - <<: *services-volume
     depends_on:
@@ -154,8 +154,8 @@ services:
       dockerfile: php.dockerfile
       target: php_queue
       args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
+        - UID=${UID:-1001}
+        - GID=${GID:-1001}
     volumes:
       - <<: *services-volume
     working_dir: /var/www/html
@@ -178,8 +178,8 @@ services:
       dockerfile: php.dockerfile
       target: php_cron
       args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
+        - UID=${UID:-1001}
+        - GID=${GID:-1001}
     volumes:
       - <<: *services-volume
     working_dir: /var/www/html
