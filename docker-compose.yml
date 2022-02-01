@@ -15,8 +15,8 @@ services:
       context: ./services/nginx
       dockerfile: nginx.dockerfile
       args:
-        - UID=${UID:-1001}
-        - GID=${GID:-1001}
+        - HOST_UID=${HOST_UID:-1001}
+        - HOST_GID=${HOST_GID:-1001}
     container_name: php-nginx
     restart: unless-stopped
     ports:
@@ -78,7 +78,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: phpmyadmin
+    container_name: php-phpmyadmin
     restart: always
     depends_on:
       - db
@@ -96,11 +96,11 @@ services:
   php:
     build:
       context: ./services/php
-      dockerfile: php.dockerfile
-      target: php_base
+      dockerfile: php8.dockerfile
+      target: php_main
       args:
-        - UID=${UID:-1001}
-        - GID=${GID:-1001}
+        - HOST_UID=${HOST_UID:-1001}
+        - HOST_GID=${HOST_GID:-1001}
     container_name: php-container
     working_dir: /var/www/html
     volumes:
@@ -114,8 +114,8 @@ services:
       context: ./services/composer
       dockerfile: composer.dockerfile
       args:
-        - UID=${UID:-1001}
-        - GID=${GID:-1001}
+        - HOST_UID=${HOST_UID:-1001}
+        - HOST_GID=${HOST_GID:-1001}
     container_name: php-composer
     volumes:
       - <<: *services-volume
@@ -129,11 +129,11 @@ services:
   artisan:
     build:
       context: ./services/php
-      dockerfile: php.dockerfile
-      target: php_base
+      dockerfile: php8.dockerfile
+      target: php_main
       args:
-        - UID=${UID:-1001}
-        - GID=${GID:-1001}
+        - HOST_UID=${HOST_UID:-1001}
+        - HOST_GID=${HOST_GID:-1001}
     container_name: php-artisan
     user: "${APP_USER}"
     volumes:
@@ -151,11 +151,11 @@ services:
     container_name: php-queue
     build:
       context: ./services/php
-      dockerfile: php.dockerfile
+      dockerfile: php8.dockerfile
       target: php_queue
       args:
-        - UID=${UID:-1001}
-        - GID=${GID:-1001}
+        - HOST_UID=${HOST_UID:-1001}
+        - HOST_GID=${HOST_GID:-1001}
     volumes:
       - <<: *services-volume
     working_dir: /var/www/html
@@ -175,11 +175,11 @@ services:
     container_name: php-cron
     build:
       context: ./services/php
-      dockerfile: php.dockerfile
+      dockerfile: php8.dockerfile
       target: php_cron
       args:
-        - UID=${UID:-1001}
-        - GID=${GID:-1001}
+        - HOST_UID=${HOST_UID:-1001}
+        - HOST_GID=${HOST_GID:-1001}
     volumes:
       - <<: *services-volume
     working_dir: /var/www/html

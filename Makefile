@@ -4,7 +4,7 @@ VERSION=${shell cat VERSION}
 CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOMAIN :=laravel.local
 PROJECT_FOLDER :=src
-
+NGINX_CERTS_PATH :=${CURRENT_DIR}services/nginx/certs
 #DEFAULT BEHAVIOR
 all:build
 
@@ -29,9 +29,9 @@ certs:
 		-cert-file ssl.crt \
 		-key-file ssl.key \
 		${DOMAIN}
-	mkdir -p ${CURRENT_DIR}services/nginx/certs
-	mv ssl.crt ${CURRENT_DIR}services/nginx/certs
-	mv ssl.key ${CURRENT_DIR}services/nginx/certs
+	mkdir -p ${NGINX_CERTS_PATH}
+	mv ssl.crt ${NGINX_CERTS_PATH}
+	mv ssl.key ${NGINX_CERTS_PATH}
 	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh add ${DOMAIN}"
 
 

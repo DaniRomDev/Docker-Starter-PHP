@@ -1,14 +1,14 @@
 FROM nginx:stable-alpine
 
-ARG UID
-ARG GID
+ARG HOST_UID
+ARG HOST_GID
 
-ENV UID=${UID}
-ENV GID=${GID}
+ENV HOST_UID=${HOST_UID}
+ENV HOST_GID=${HOST_GID}
 
 RUN delgroup dialout
-RUN addgroup -g ${GID} --system laravel
-RUN adduser -G laravel --system -D -s /bin/sh -u ${UID} laravel
+RUN addgroup -g ${HOST_GID} --system laravel
+RUN adduser -G laravel --system -D -s /bin/sh -u ${HOST_UID} laravel
 RUN sed -i "s/user  nginx/user laravel/g" /etc/nginx/nginx.conf
 
 RUN mkdir -p /var/www/html && \

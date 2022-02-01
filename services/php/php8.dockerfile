@@ -1,16 +1,17 @@
+#PHP BASE IMAGE FOR MULTI STAGING
 FROM php:fpm-alpine3.15 as php_base
 
-ARG UID
-ARG GID
+ARG HOST_UID
+ARG HOST_GID
 
-ENV UID=${UID}
-ENV GID=${GID}
+ENV HOST_UID=${HOST_UID}
+ENV HOST_GID=${HOST_GID}
 
 COPY config/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 RUN delgroup dialout
-RUN addgroup -g ${GID} --system laravel
-RUN adduser -G laravel --system -D -s /bin/sh -u ${UID} laravel
+RUN addgroup -g ${HOST_GID} --system laravel
+RUN adduser -G laravel --system -D -s /bin/sh -u ${HOST_UID} laravel
 
 RUN sed -i "s/user = www-data/user = laravel/g" /usr/local/etc/php-fpm.d/www.conf
 RUN sed -i "s/group = www-data/group = laravel/g" /usr/local/etc/php-fpm.d/www.conf
@@ -48,6 +49,9 @@ RUN docker-php-ext-configure intl
 
 RUN docker-php-ext-install bz2 xsl ctype filter opcache gd intl pdo pdo_mysql pdo_pgsql pdo_sqlite exif pcntl 
 
+#PHP MAIN image with redis extension
+FROM php_base as php_main
+
 RUN mkdir -p /usr/src/php/ext/redis \
     && curl -L https://github.com/phpredis/phpredis/archive/5.3.4.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 \
     && echo 'redis' >> /usr/src/php-available-exts \
@@ -55,6 +59,7 @@ RUN mkdir -p /usr/src/php/ext/redis \
 
 CMD ["php-fpm", "-y", "/usr/local/etc/php-fpm.conf", "-R"]
 
+#PHP IMAGE FOR CRON SCHEDULER
 FROM php_base AS php_cron
 
 COPY cron/run-scheduler.sh /usr/bin/run-scheduler.sh
@@ -62,6 +67,7 @@ RUN chmod u+x /usr/bin/run-scheduler.sh
 
 CMD ["/usr/bin/run-scheduler.sh"]
 
+#PHP IMAGE FOR QUEUE DAEMON
 FROM php_base AS php_queue
 
 CMD ["php", "/var/www/html/artisan", "queue:work"] 

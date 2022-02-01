@@ -9,7 +9,7 @@ if [ "$(uname)" == "Darwin" ]; then
     brew tap homebrew/cask-versions
     brew install curl wget mkcert nss docker docker-compose 
 
-    export UID=$(id -u) && export GID=$(id -g)
+    export HOST_UID=$(id -u) && export HOST_GID=$(id -g)
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ] || [ "$(uname)" == "cygwin"]; then
     sudo apt update
