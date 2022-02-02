@@ -29,25 +29,17 @@ RUN apk add --update --no-cache --virtual .build-deps \
     gcc \
     make \
     zlib-dev \
-    freetype \
     libxslt-dev \
     libbz2 \
-    libpng \
     libzip-dev \
-    freetype-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
     postgresql-dev \
     postgresql-libs \
-    sqlite-dev \
-    zstd-dev \
-    icu-dev
+    sqlite-dev 
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
 RUN docker-php-ext-configure intl
 
-RUN docker-php-ext-install bz2 xsl ctype filter opcache gd intl pdo pdo_mysql pdo_pgsql pdo_sqlite exif pcntl 
+RUN docker-php-ext-install ctype filter intl pdo pdo_mysql pdo_pgsql pdo_sqlite pcntl 
 
 #PHP MAIN image with redis extension
 FROM php_base as php_main
