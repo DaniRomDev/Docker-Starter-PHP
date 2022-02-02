@@ -10,19 +10,18 @@
 - [Table of contents](#table-of-contents)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
-  - [Windows](#windows)
-  - [Unix based systems](#unix-based-systems)
+  - [Make tool](#make-tool)
+    - [Windows](#windows)
+        - [WSL 2](#wsl-2)
+    - [Unix based systems](#unix-based-systems)
 - [Makefile](#makefile)
+  - [Makefile variables](#makefile-variables)
   - [Environment root file _(.env)_](#environment-root-file-env)
-  - [List of available commands](#list-of-available-commands)
+  - [Build and get running the local dev environment](#build-and-get-running-the-local-dev-environment)
     - [Create fresh laravel project](#create-fresh-laravel-project)
     - [Working with containers](#working-with-containers)
   - [Use Https and Custom domain on your local environment](#use-https-and-custom-domain-on-your-local-environment)
-    - [Post installation](#post-installation)
-- [Installed Packages on Post-Install](#installed-packages-on-post-install)
-  - [Secure headers](#secure-headers)
-  - [Predis](#predis)
-  - [Laravel-DOMPDF](#laravel-dompdf)
+    - [Post Laravel installation](#post-laravel-installation)
 
 # Features
 
@@ -30,24 +29,32 @@
 - #### Share your site with [ngrok](https://ngrok.com/)
 - #### Easily customizable via **.env** files
 - #### Minimal stack to avoid opinionated setups
-- #### (Optional )Nginx configuration have SSL implemented, just add a self certificate
+- #### Nginx configuration have SSL implemented, automatically created on initial build
 - #### You can add more services in docker-compose.yml without problem
 
 # Prerequisites
 
-[Needs docker](https://www.docker.com/products/docker-desktop)
-In order to use make utils that allow us execute the Makefile commands, depending on your OS system it will be installed in one way or another.
+---
 
-**_Note: You can use the commands without make utils and ignore Makefile but we recommend use it for reasons of convenience_**
+## Make tool
 
-## Windows
+### Windows
 
 - Install [Chocolatey package manager](https://chocolatey.org/install)
 - Once installed run: `sh choco install make`
 
-## Unix based systems
+##### WSL 2
 
-Normally is installed by default but if for whatever reason you don't have it, just install the build-essential package via terminal.
+We strongly recommend using Ubuntu as a subsystem when it comes to work as programmer on windows environments, it will save you a lot of trouble in the future. Here we give you the best resources to prepare the setup on your Windows system.
+[How to setup the perfect development environment for windows](https://char.gd/blog/2017/how-to-set-up-the-perfect-modern-dev-environment-on-windows)
+[Window 10 for web dev](https://fireship.io/lessons/windows-10-for-web-dev)
+[Window terminal preview](https://www.microsoft.com/en-us/p/windows-terminal-preview/9n0dx20hk701?activetab=pivot:overviewtab#)
+
+---
+
+### Unix based systems
+
+Usually is installed by default but if for whatever reason you don't have it, just install the build-essential package via terminal.
 
 ```sh
 # DEBIAN based
@@ -59,29 +66,60 @@ yum install make
 
 # Makefile
 
-## Environment root file _(.env)_
+This file help us to abstract the layer that interacts with your application in a standard way without needed to touch docker directly.
 
-Copy the **.env.example** and create new file called **.env**. Docker compose use this file values to build the containers. Do this in a manual way or run in the root:
+The default make command install automatically the dependencies needed to raise the local development environment and modify your **/etc/hosts** to setup your custom domain that you're plan to use for HTTPS, because of this you need to provide your user password in order to execute commands as **'sudo'** _(don't hesitate to check the bash scripts to make sure there is no malicious code)_.
+
+**_Note: If you're using WSL you need to manually edit the /etc/hosts on your Window OS to setup the custom domain_**.
+
+## Makefile variables
 
 ```sh
-cp .env.example .env
+SHELL=/bin/bash
+VERSION=${shell cat VERSION}
+CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+DOMAIN :=laravel.local #Choose the domain you want to work for your app
+PROJECT_FOLDER :=src
+NGINX_CERTS_PATH :=${CURRENT_DIR}services/nginx/certs
 ```
 
-And feel free to modify them to your liking.
+## Environment root file _(.env)_
 
-## List of available commands
+Default configuration variables to be used on ` docker-compose.yml`, feel free to modify them to fit your requisites.
 
 ```sh
-make help
+APP_USER=laravel
+
+NGINX_INTERNAL_PORT=80
+
+DB_PORT=3306
+DB_NAME=laravel_db
+DB_USER=laravel
+DB_USER_PASSWORD=secret
+DB_ROOT_PASSWORD=secret
+DB_ALLOW_EMPTY_PASSWORD=yes
+
+NGROK_PROTOCOL=http
+NGROK_TOKEN=# When you create a ngrok account you only need to provide your token here
+NGROK_REGION=eu
+```
+
+## Build and get running the local dev environment
+
+```sh
+make or make build
 ```
 
 ### Create fresh laravel project
 
 ```sh
-make create-project
+# Be sure to build the docker environment first
+make laravel/install
 ```
 
 ### Working with containers
+
+**_For full documentation open the Makefile and see all the commands available_**
 
 ```sh
 # For local environment setup
@@ -93,111 +131,81 @@ make restart # To restart all the containers
 make destroy # To destroy them if you need a complete rebuild
 
 # Using Artisan & Compose
-docker compose run --rm artisan # your command here...
-docker compose run --rm compose # your command here...
-
-#Examples
-docker compose run --rm artisan migrate:fresh --seed
-docker compose run --rm composer require predis/predis doctrine/dbal
-```
-
-You can create aliases to make work with containers in an easy way, this step is optional:
-
-```sh
-source create-command-alias.sh
-
-# or run the commands on console
-
-#! /bin/bash
-
-alias _artisan='docker-compose run --rm artisan'
-alias _composer='docker-compose run --rm composer'
-alias _npm='docker-compose run --rm npm'
+#  Examples
+make artisan command=migrate:fresh --seed
+make composer require packages=predis/predis doctrine/dbal
 ```
 
 ## Use Https and Custom domain on your local environment
 
 _(Source on detail: https://hackerrdave.com/https-local-docker-nginx/)_
 
-- Edit /etc/hosts and add your own custom domain for 127.0.0.1
-- Install mkcert on your machine
-- Run mkcert -install
-- mkcert -key-file ssl.key -cert-file ssl.crt **yourcustomdomain.local**
-- Create inside nginx folder another one with the name of 'certs'
-- Move on this one the files that mkcert creates for you (ssl.crt and ssl.key)
-- Go to https://yourcustomdomain.local to see the certificate working
-
-### Post installation
-
-Once installed you need to fill **.env** values inside root laravel folder to get it running. The values exposed below are just for example purposes, feel free to change them according to your \*_docker-compose.yml_ configuration.
-
-```env
-# DATABASE (This values comes from the docker-compose.yml)
-DB_CONNECTION=mysql
-DB_HOST=db # docker container
-DB_PORT=3306 # The exposed port from db container
-DB_DATABASE=laravel-db
-DB_USERNAME=laravel
-DB_PASSWORD=secret
-
-# REDIS RELATED OPTIONS
-REDIS_CLIENT=predis # We use the package predis/predis so we need to select this client.
-REDIS_HOST=redis  # docker container
-REDIS_PORT=6379 # The exposed port defined on root .env
-CACHE_DRIVER=redis
-QUEUE_CONNECTION=redis
-
-# MAIL
-*Free to change this values, this defined below are just for example purpose*
-MAIL_FROM_ADDRESS=admin@laravel.com
-MAIL_FROM_NAME=Laravel-App
-
-```
-
-Once configured you can execute post installation script with:
+This process is automatically made on the build but if you want to manually run it just do:
 
 ```sh
-make post-install
+make certs
 ```
 
-# Installed Packages on Post-Install
+### Post Laravel installation
 
-Once the command is executed, some recommended packages have been installed in the process, this are useful for 95% of the cases but nothing stop you to remove them.
-
-If you want to keep them _(100% recommended)_, just configure with the steps presented below:
-
-## [Secure headers](https://github.com/BePsvPT/secure-headers)
-
-Add an extra security layer for incoming requests easy to configure.
-
-Publish config file
+Once installed you need to fill **.env** values inside src laravel folder to point to the containers and start using the database, mail interceptor, redis, etc.
 
 ```sh
-php artisan vendor:publish --provider="Bepsvpt\SecureHeaders\SecureHeadersServiceProvider"
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:UmTYomiL4uePMyVQYo0NWxAKMfDJtdenq4I380KE9y0=
+APP_DEBUG=true
+APP_URL=https://laravel.local # Your custom domain selected here
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=db # The docker container for database
+DB_HOST=mysql
+DB_PORT=3306
+# This values are defined on the root .env file
+DB_NAME=laravel_db
+DB_USER=laravel
+DB_USER_PASSWORD=secret
+DB_ROOT_PASSWORD=secret
+DB_ALLOW_EMPTY_PASSWORD=yes
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DRIVER=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog # Docker container to intercept emails
+MAIL_PORT=1025
+#Feel free to fill this ones with the values that makes sense for your app
+MAIL_USERNAME=laravel
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=TLS
+MAIL_FROM_ADDRESS=laravel@docker-starter.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
 ```
-
-Add global middleware in `app/Http/Kernel.php`
-
-```php
-\Bepsvpt\SecureHeaders\SecureHeadersMiddleware::class,
-```
-
-Set up config file `config/secure-headers.php` _(You can leave the default one)_
-
-And done!
-
-## Predis
-
-We use package predis/predis as redis client recommended from the [official laravel docs](https://laravel.com/docs/8.x/redis#predis), in file **.env.example** you can see the **REDIS*CLIENT=\_predis***, just remove this line and remove the package from **composer.json** if you do not intend to use it or would like an alternative.
-
-## [Laravel-DOMPDF](https://github.com/barryvdh/laravel-dompdf)
-
-What application sooner or later does not have to deal with PDFs? this one is pretty good and we recommend it without doubt.
-
-After updating composer, add the ServiceProvider to the providers array in config/app.php
-
-    Barryvdh\DomPDF\ServiceProvider::class,
-
-You can optionally use the facade for shorter code. Add this to your facades:
-
-    'PDF' => Barryvdh\DomPDF\Facade::class,
