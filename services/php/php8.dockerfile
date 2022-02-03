@@ -23,14 +23,12 @@ RUN mkdir -p /var/www/html && \
 WORKDIR /var/www/html
 
 RUN apk add --update --no-cache --virtual .build-deps \
-    yaml-dev \
-    bzip2-dev \
+    autoconf \
+    automake \
     g++ \
+    bash \
     gcc \
     make \
-    zlib-dev \
-    libxslt-dev \
-    libbz2 \
     libzip-dev \
     postgresql-dev \
     postgresql-libs \
@@ -39,8 +37,8 @@ RUN apk add --update --no-cache --virtual .build-deps \
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
 RUN docker-php-ext-configure intl
 
-RUN docker-php-ext-install ctype filter intl pdo pdo_mysql pdo_pgsql pdo_sqlite pcntl 
-
+RUN docker-php-ext-install bcmath opcache zip intl pdo pdo_mysql pdo_pgsql pdo_sqlite pcntl 
+RUN docker-php-ext-enable opcache
 #PHP MAIN image with redis extension
 FROM php_base as php_main
 
