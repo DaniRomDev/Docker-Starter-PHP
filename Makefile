@@ -1,10 +1,11 @@
 #CURRENT DIR FOR WINDOWS & UNIX SYSTEMS
+CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/bash
 VERSION=${shell cat VERSION}
-CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOMAIN :=laravel.local
 PROJECT_FOLDER :=src
 NGINX_CERTS_PATH :=${CURRENT_DIR}services/nginx/certs
+
 #DEFAULT BEHAVIOR
 all:build
 
