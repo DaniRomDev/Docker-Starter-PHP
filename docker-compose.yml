@@ -96,7 +96,7 @@ services:
   php:
     build:
       context: ./services/php
-      dockerfile: php8.dockerfile
+      dockerfile: php8.1.dockerfile
       target: php_main
       args:
         - HOST_UID=${HOST_UID:-1001}
@@ -129,7 +129,7 @@ services:
   artisan:
     build:
       context: ./services/php
-      dockerfile: php8.dockerfile
+      dockerfile: php8.1.dockerfile
       target: php_main
       args:
         - HOST_UID=${HOST_UID:-1001}
@@ -151,7 +151,7 @@ services:
     container_name: php-queue
     build:
       context: ./services/php
-      dockerfile: php8.dockerfile
+      dockerfile: php8.1.dockerfile
       target: php_queue
       args:
         - HOST_UID=${HOST_UID:-1001}
@@ -175,7 +175,7 @@ services:
     container_name: php-cron
     build:
       context: ./services/php
-      dockerfile: php8.dockerfile
+      dockerfile: php8.1.dockerfile
       target: php_cron
       args:
         - HOST_UID=${HOST_UID:-1001}

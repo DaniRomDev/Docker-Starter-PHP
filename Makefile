@@ -82,7 +82,17 @@ laravel/install:docker/down clean composer/install-laravel up
 composer composer/install composer/update composer/require composer/remove composer/install-laravel:
 	@make docker/run command="composer ${ACTION}"
 
+
+artisan/optimize: command=optimize:clear
+artisan/tinker: command=tinker
+
 .PHONY: artisan
-artisan:
+artisan artisan/optimize artisan/tinker:
 	@make docker/run command="artisan $(command)" 
 
+npm/install: command=install
+npm/update: command=update
+
+.PHONY: npm
+npm npm/install npm/update:
+	@make docker/run command="npm $(command)" 
