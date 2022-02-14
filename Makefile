@@ -74,12 +74,13 @@ composer/install: ACTION=install
 composer/update: ACTION=update
 composer/require: ACTION=require $(packages)
 composer/remove: ACTION=remove $(packages)
+composer/dump-autoload: ACTION=dump-autoload
 composer/install-laravel: ACTION=create-project --prefer-dist laravel/laravel .
 
 laravel/install:docker/down clean composer/install-laravel up
 
 .PHONY: composer
-composer composer/install composer/update composer/require composer/remove composer/install-laravel:
+composer composer/install composer/update composer/require composer/remove composer/install-laravel composer/dump-autoload:
 	@make docker/run command="composer ${ACTION}"
 
 
@@ -92,7 +93,8 @@ artisan artisan/optimize artisan/tinker:
 
 npm/install: command=install
 npm/update: command=update
+npm/dev: command=run dev
 
 .PHONY: npm
-npm npm/install npm/update:
+npm npm/install npm/update npm/dev:
 	@make docker/run command="npm $(command)" 
