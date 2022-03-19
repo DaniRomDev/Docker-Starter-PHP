@@ -11,8 +11,6 @@ ENV APP_USER=${APP_USER}
 RUN delgroup dialout
 RUN addgroup -g ${HOST_GID} --system ${APP_USER}
 RUN adduser -G ${APP_USER} --system -D -s /bin/sh -u ${HOST_UID} ${APP_USER}
-RUN sed -i "s/user  nginx/user ${APP_USER}/g" /etc/nginx/nginx.conf
-RUN sed -i 's/^user.*/user ${APP_USER};/' /etc/nginx/nginx.conf
 
 RUN mkdir -p /var/www/html && \
     chown ${APP_USER}:${APP_USER} /var/www/html && \
@@ -20,3 +18,6 @@ RUN mkdir -p /var/www/html && \
 
 COPY config/nginx.conf /etc/nginx/nginx.conf
 COPY config/default.conf /etc/nginx/conf.d/default.conf
+
+RUN sed -i "s/^user.*/user ${APP_USER};/" /etc/nginx/nginx.conf
+
