@@ -17,6 +17,9 @@ services:
       args:
         - HOST_UID=${HOST_UID:-1001}
         - HOST_GID=${HOST_GID:-1001}
+        - APP_USER=${APP_USER}
+    environment:
+      - APP_USER=${APP_USER}
     container_name: "${CONTAINER_PREFIX}-nginx"
     restart: unless-stopped
     ports:
@@ -38,6 +41,7 @@ services:
       args:
         - HOST_UID=${HOST_UID:-1001}
         - HOST_GID=${HOST_GID:-1001}
+        - APP_USER=${APP_USER}
     container_name: "${CONTAINER_PREFIX}-php"
     working_dir: /var/www/html
     user: ${APP_USER}

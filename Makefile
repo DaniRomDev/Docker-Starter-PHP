@@ -14,7 +14,7 @@ all:build
 build:install env docker/build-nc up
 
 install:
-		@chmod -R u+x "${DOCKER_PATH}/scripts"
+	@chmod -R u+x "${DOCKER_PATH}/scripts"
 	$(SHELL) -c "${DOCKER_PATH}/scripts/install-dependencies.sh"
 	@mkdir -p "${CURRENT_DIR}src"
 	@make certs
@@ -27,7 +27,6 @@ clean:
 	@$(SHELL) -c "rm -rfv ${CURRENT_DIR}${PROJECT_FOLDER}/{*,.*} ||:"
 
 certs:
-	mkcert -install \
 	mkcert -cert-file ssl.crt \
 		-cert-file ssl.crt \
 		-key-file ssl.key \
@@ -35,7 +34,7 @@ certs:
 	mkdir -p ${NGINX_CERTS_PATH}
 	mv ssl.crt ${NGINX_CERTS_PATH}
 	mv ssl.key ${NGINX_CERTS_PATH}
-	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh add ${DOMAIN}"
+	$(SHELL) -c "${DOCKER_PATH}/scripts/manage-etc-hosts.sh add ${DOMAIN}"
 
 
 up: docker/up

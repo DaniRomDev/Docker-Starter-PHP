@@ -3,9 +3,11 @@ FROM php:fpm-alpine3.15
 
 ARG HOST_UID
 ARG HOST_GID
+ARG APP_USER
 
 ENV HOST_UID=${HOST_UID}
 ENV HOST_GID=${HOST_GID}
+ENV APP_USER=${APP_USER}
 
 COPY config/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY cron/start.sh /usr/local/bin/start
