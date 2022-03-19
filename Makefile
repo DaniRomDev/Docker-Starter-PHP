@@ -3,8 +3,9 @@ CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/bash
 VERSION=${shell cat VERSION}
 DOMAIN :=laravel.local
-PROJECT_FOLDER :=src
-NGINX_CERTS_PATH :=${CURRENT_DIR}services/nginx/certs
+PROJECT_FOLDER :=${CURRENT_DIR}src
+DOCKER_PATH :=${CURRENT_DIR}docker
+NGINX_CERTS_PATH :=${DOCKER_PATH}/nginx/certs
 
 #DEFAULT BEHAVIOR
 all:build
@@ -13,9 +14,9 @@ all:build
 build:install env docker/build-nc up
 
 install:
-	@chmod -R u+x "${CURRENT_DIR}scripts"
-	$(SHELL) -c "${CURRENT_DIR}scripts/install-dependencies.sh"
-	@mkdir -p src
+		@chmod -R u+x "${DOCKER_PATH}/scripts"
+	$(SHELL) -c "${DOCKER_PATH}/scripts/install-dependencies.sh"
+	@mkdir -p "${CURRENT_DIR}src"
 	@make certs
 
 env:
@@ -26,6 +27,7 @@ clean:
 	@$(SHELL) -c "rm -rfv ${CURRENT_DIR}${PROJECT_FOLDER}/{*,.*} ||:"
 
 certs:
+	mkcert -install \
 	mkcert -cert-file ssl.crt \
 		-cert-file ssl.crt \
 		-key-file ssl.key \
@@ -43,22 +45,23 @@ down: docker/down
 ps: docker/ps
 restart:docker/down docker/up
 destroy:docker/destroy
-	$(SHELL) -c "${CURRENT_DIR}scripts/manage-etc-hosts.sh remove ${DOMAIN}"
+	$(SHELL) -c "${DOCKER_PATH}/scripts/manage-etc-hosts.sh remove ${DOMAIN}"
 
 # DOCKER GENERIC COMMANDS
 docker/ps: CMD=ps
 docker/build: CMD=build
 docker/build-nc: CMD=build --no-cache
+docker/rebuild: CMD=up -d --no-deps --build --force-recreate
 docker/up: CMD=up -d
 docker/stop: CMD=stop
 docker/down: CMD=down --remove-orphans
-docker/restart: CND=restart
+docker/restart: CMD=restart
 docker/destroy: CMD=down --rmi all --volumes --remove-orphans
 docker/destroy-volumes: CMD=down --volumes --remove-orphans
 docker/run: CMD=run --rm $(command)
 docker/exec: CMD=exec $(command)
-	
-docker/ps docker/up docker/build docker/build-nc docker/stop docker/restart docker/down docker/destroy docker/destroy-volumes docker/run docker/exec:
+
+docker/ps docker/up docker/build docker/rebuild docker/build-nc docker/stop docker/restart docker/down docker/destroy docker/destroy-volumes docker/run docker/exec:
 	docker-compose ${CMD}
 
 shell/nginx: CMD="nginx bash"

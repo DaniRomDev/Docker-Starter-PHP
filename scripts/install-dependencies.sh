@@ -33,4 +33,3 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ] || [ "$(expr substr $
 else
     echo -e "$(tput setaf 1) All dependencies are up to date, continuing with the build process..."
 fi
-
