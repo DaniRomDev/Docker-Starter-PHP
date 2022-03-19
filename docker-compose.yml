@@ -135,7 +135,20 @@ services:
       - "8025:8025"
     networks:
       - laravel-network
-
+  ngrok:
+    image: wernight/ngrok:latest
+    container_name: ngrok
+    ports:
+      - 4040:4040
+    environment:
+      NGROK_PROTOCOL: http
+      NGROK_PORT: "nginx:${NGINX_INTERNAL_PORT}"
+      NGROK_AUTH: ${NGROK_TOKEN}
+      NGROK_REGION: eu
+    depends_on:
+      - nginx
+    networks:
+      - laravel-network
 volumes:
   db-data:
   redis-data:
