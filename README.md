@@ -20,7 +20,8 @@
   - [Build and get running the local dev environment](#build-and-get-running-the-local-dev-environment)
     - [Create fresh laravel project](#create-fresh-laravel-project)
     - [Working with containers](#working-with-containers)
-  - [Use Https and Custom domain on your local environment](#use-https-and-custom-domain-on-your-local-environment)
+  - [Use HTTPS and Custom domain on your local environment](#use-https-and-custom-domain-on-your-local-environment)
+    - [Disable HTTPS support on local environment](#disable-https-support-on-local-environment)
     - [Post Laravel installation](#post-laravel-installation)
 
 # Features
@@ -31,6 +32,7 @@
 - #### Minimal stack to avoid opinionated setups
 - #### Nginx configuration have SSL implemented, automatically created on initial build
 - #### You can add more services in docker-compose.yml without problem
+- #### No more permissions conflict while creating files inside containers
 
 # Prerequisites
 
@@ -75,12 +77,15 @@ The default make command install automatically the dependencies needed to raise 
 ## Makefile variables
 
 ```sh
+#CURRENT DIR FOR WINDOWS & UNIX SYSTEMS
+CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL=/bin/bash
 VERSION=${shell cat VERSION}
-CURRENT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-DOMAIN :=laravel.local #Choose the domain you want to work for your app
-PROJECT_FOLDER :=src
-NGINX_CERTS_PATH :=${CURRENT_DIR}services/nginx/certs
+DOMAIN :=laravel.local
+PROJECT_FOLDER :=${CURRENT_DIR}src
+DOCKER_PATH :=${CURRENT_DIR}docker
+NGINX_CERTS_PATH :=${DOCKER_PATH}/nginx/certs
+
 ```
 
 ## Environment root file _(.env)_
@@ -90,6 +95,7 @@ Default configuration variables to be used on ` docker-compose.yml`, feel free t
 ```sh
 APP_USER=laravel
 
+CONTAINER_PREFIX=laravel-app
 NGINX_INTERNAL_PORT=80
 
 DB_PORT=3306
@@ -114,7 +120,7 @@ make or make build
 
 ```sh
 # Be sure to build the docker environment first
-make laravel/install
+make install-laravel
 ```
 
 ### Working with containers
@@ -130,13 +136,10 @@ make restart # To restart all the containers
 
 make destroy # To destroy them if you need a complete rebuild
 
-# Using Artisan & Compose
-#  Examples
-make artisan command=migrate:fresh --seed
-make composer require packages=predis/predis doctrine/dbal
+make shell/php # Bash session inside php container (to use artisan commands, composer, npm, etc.)
 ```
 
-## Use Https and Custom domain on your local environment
+## Use HTTPS and Custom domain on your local environment
 
 _(Source on detail: https://hackerrdave.com/https-local-docker-nginx/)_
 
@@ -144,6 +147,48 @@ This process is automatically made on the build but if you want to manually run 
 
 ```sh
 make certs
+```
+
+### Disable HTTPS support on local environment
+
+If for any reason you don't want to use the https port on your nginx server, just comment out the server block for 443 port
+on file before build the containers
+
+```sh:docker/nginx/default.conf
+# COMMENT THIS PART
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    ssl_certificate /etc/nginx/ssl/ssl.crt;
+    ssl_certificate_key /etc/nginx/ssl/ssl.key;
+    ssl_protocols TLSv1.2;
+
+    server_name localhost *.ngrok.io;
+    index index.php index.html index.htm;
+    error_log  /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
+    root /var/www/html/public;
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        try_files $uri $uri/ /index.php?$query_string;
+        gzip_static on;
+    }
+}
 ```
 
 ### Post Laravel installation
@@ -155,7 +200,7 @@ APP_NAME=Laravel
 APP_ENV=local
 APP_KEY=base64:UmTYomiL4uePMyVQYo0NWxAKMfDJtdenq4I380KE9y0=
 APP_DEBUG=true
-APP_URL=https://laravel.local # Your custom domain selected here
+APP_URL=https://laravel.local # Your custom domain selected here or https://localhost:8080
 
 LOG_CHANNEL=stack
 LOG_DEPRECATIONS_CHANNEL=null
@@ -180,7 +225,7 @@ SESSION_LIFETIME=120
 
 MEMCACHED_HOST=127.0.0.1
 
-REDIS_HOST=127.0.0.1
+REDIS_HOST=redis
 REDIS_PASSWORD=null
 REDIS_PORT=6379
 
