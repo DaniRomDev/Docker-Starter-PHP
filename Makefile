@@ -24,7 +24,7 @@ env:
 
 .PHONY: clean
 clean:
-	@$(SHELL) -c "rm -rfv ${CURRENT_DIR}${PROJECT_FOLDER}/{*,.*} ||:"
+	@$(SHELL) -c "rm -rfv ${PROJECT_FOLDER}/{*,.*} ||:"	
 
 certs:
 	mkcert -cert-file ssl.crt \
@@ -72,31 +72,5 @@ shell/redis: CMD="redis bash"
 shell shell/nginx shell/php shell/db shell/redis:
 	@make docker/exec command=${CMD}
 
-composer/install: ACTION=install
-composer/update: ACTION=update
-composer/require: ACTION=require $(packages)
-composer/remove: ACTION=remove $(packages)
-composer/dump-autoload: ACTION=dump-autoload
-composer/install-laravel: ACTION=create-project --prefer-dist laravel/laravel .
-
-laravel/install:docker/down clean composer/install-laravel up
-
-.PHONY: composer
-composer composer/install composer/update composer/require composer/remove composer/install-laravel composer/dump-autoload:
-	@make docker/run command="composer ${ACTION}"
-
-
-artisan/optimize: command=optimize:clear
-artisan/tinker: command=tinker
-
-.PHONY: artisan
-artisan artisan/optimize artisan/tinker:
-	@make docker/run command="artisan $(command)" 
-
-npm/install: command=install
-npm/update: command=update
-npm/dev: command=run dev
-
-.PHONY: npm
-npm npm/install npm/update npm/dev:
-	@make docker/run command="npm $(command)" 
+install-laravel:clean
+	@make docker/exec command="php composer create-project --prefer-dist laravel/laravel ."
