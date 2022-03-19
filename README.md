@@ -19,10 +19,10 @@
   - [Environment root file _(.env)_](#environment-root-file-env)
   - [Build and get running the local dev environment](#build-and-get-running-the-local-dev-environment)
     - [Create fresh laravel project](#create-fresh-laravel-project)
+    - [Post Laravel installation](#post-laravel-installation)
     - [Working with containers](#working-with-containers)
   - [Use HTTPS and Custom domain on your local environment](#use-https-and-custom-domain-on-your-local-environment)
     - [Disable HTTPS support on local environment](#disable-https-support-on-local-environment)
-    - [Post Laravel installation](#post-laravel-installation)
 
 # Features
 
@@ -123,6 +123,70 @@ make or make build
 make install-laravel
 ```
 
+### Post Laravel installation
+
+Once installed you need to fill **.env** values inside src laravel folder to point to the containers and start using the database, mail interceptor, redis, etc.
+
+```sh
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:UmTYomiL4uePMyVQYo0NWxAKMfDJtdenq4I380KE9y0=
+APP_DEBUG=true
+APP_URL=https://laravel.local # Your custom domain selected here or https://localhost:8080
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=db # The docker container for database
+DB_HOST=mysql
+DB_PORT=3306
+# This values are defined on the root .env file
+DB_NAME=laravel_db
+DB_USER=laravel
+DB_USER_PASSWORD=secret
+DB_ROOT_PASSWORD=secret
+DB_ALLOW_EMPTY_PASSWORD=yes
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DRIVER=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=redis
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog # Docker container to intercept emails
+MAIL_PORT=1025
+#Feel free to fill this ones with the values that makes sense for your app
+MAIL_USERNAME=laravel
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=TLS
+MAIL_FROM_ADDRESS=laravel@docker-starter.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+```
+
 ### Working with containers
 
 **_For full documentation open the Makefile and see all the commands available_**
@@ -189,68 +253,4 @@ server {
         gzip_static on;
     }
 }
-```
-
-### Post Laravel installation
-
-Once installed you need to fill **.env** values inside src laravel folder to point to the containers and start using the database, mail interceptor, redis, etc.
-
-```sh
-APP_NAME=Laravel
-APP_ENV=local
-APP_KEY=base64:UmTYomiL4uePMyVQYo0NWxAKMfDJtdenq4I380KE9y0=
-APP_DEBUG=true
-APP_URL=https://laravel.local # Your custom domain selected here or https://localhost:8080
-
-LOG_CHANNEL=stack
-LOG_DEPRECATIONS_CHANNEL=null
-LOG_LEVEL=debug
-
-DB_CONNECTION=db # The docker container for database
-DB_HOST=mysql
-DB_PORT=3306
-# This values are defined on the root .env file
-DB_NAME=laravel_db
-DB_USER=laravel
-DB_USER_PASSWORD=secret
-DB_ROOT_PASSWORD=secret
-DB_ALLOW_EMPTY_PASSWORD=yes
-
-BROADCAST_DRIVER=log
-CACHE_DRIVER=file
-FILESYSTEM_DRIVER=local
-QUEUE_CONNECTION=sync
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-
-MEMCACHED_HOST=127.0.0.1
-
-REDIS_HOST=redis
-REDIS_PASSWORD=null
-REDIS_PORT=6379
-
-MAIL_MAILER=smtp
-MAIL_HOST=mailhog # Docker container to intercept emails
-MAIL_PORT=1025
-#Feel free to fill this ones with the values that makes sense for your app
-MAIL_USERNAME=laravel
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=TLS
-MAIL_FROM_ADDRESS=laravel@docker-starter.com
-MAIL_FROM_NAME="${APP_NAME}"
-
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_DEFAULT_REGION=us-east-1
-AWS_BUCKET=
-AWS_USE_PATH_STYLE_ENDPOINT=false
-
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-PUSHER_APP_CLUSTER=mt1
-
-MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
-MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
-
 ```
